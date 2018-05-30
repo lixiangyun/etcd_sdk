@@ -1,9 +1,19 @@
 package main
 
 import (
-	"github.com/lixiangyun/etcd-sdk"
+	"log"
+
+	"github.com/lixiangyun/etcdsdk"
 )
 
 func main() {
 
+	endpoints := []string{"localhost:2379"}
+
+	err := etcdsdk.ServiceConnect(endpoints)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	etcdsdk.ServiceDisconnect()
 }
