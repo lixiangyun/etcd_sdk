@@ -42,3 +42,7 @@ func ServiceDisconnect() {
 	gstConnect.cancel()
 	gstConnect.conn.Close()
 }
+
+func Call() *clientv3.Client {
+	return gstConnect.conn
+}
