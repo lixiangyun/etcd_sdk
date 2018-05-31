@@ -229,6 +229,7 @@ func ServiceStatusUpdate(id InstanceID, status int) error {
 
 	for {
 		instctrl.inst.Status = status
+		instctrl.inst.Timestamp = TimestampGet()
 
 		inst, err := instanceUpdate(instctrl)
 		if err != nil {
