@@ -30,6 +30,7 @@ func main() {
 		log.Fatalf("%s", err.Error())
 	}
 
+	log.Println("total instance : ", len(inst))
 	for _, v := range inst {
 		log.Println("get instance : ", v)
 	}
@@ -47,4 +48,17 @@ func main() {
 	etcdsdk.ServiceStatusUpdate(id, 1)
 
 	time.Sleep(time.Second * 1)
+
+	etcdsdk.ServiceDelete(id)
+
+	time.Sleep(time.Second * 1)
+
+	inst, err = etcdsdk.ServiceQuery("demo1")
+	if err != nil {
+		log.Fatalf("%s", err.Error())
+	}
+	log.Println("total instance : ", len(inst))
+	for _, v := range inst {
+		log.Println("get instance : ", v)
+	}
 }

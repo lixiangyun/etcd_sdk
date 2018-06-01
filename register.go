@@ -341,3 +341,29 @@ func ServiceWatch(name string) <-chan WatchRsqonse {
 
 	return wtrspch
 }
+
+func ServiceDelete(id InstanceID) error {
+
+	gServiceMap.Lock()
+	defer gServiceMap.Unlock()
+
+	instctrl, b := gServiceMap.i[id]
+	if b == false {
+		return errors.New("instance " + string(id) + " is not exist!")
+	}
+
+	instctrl.stop <- struct{}{}
+
+	instctrl.Lock()
+	defer instctrl.Unlock()
+
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	_, err := Call().Revoke(ctx, v3.LeaseID(instctrl.lease))
+	cancel()
+	if err != nil {
+		return err
+	}
+
+	delete(gServiceMap.i, id)
+	return nil
+}
