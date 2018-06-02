@@ -16,12 +16,18 @@ type KeyValue struct {
 	Value string
 }
 
-func KeyValuePut(kv KeyValue) error {
+type KvWatchRsq struct {
+	Act   EVENT_TYPE
+	Key   string
+	Value string
+}
 
-	key := publicKvsPrefix + kv.Key
+func KeyValuePut(key string, value string) error {
+
+	key = publicKvsPrefix + key
 
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	_, err := Call().Put(ctx, key, kv.Value)
+	_, err := Call().Put(ctx, key, value)
 	cancel()
 	if err != nil {
 		return err
@@ -29,7 +35,7 @@ func KeyValuePut(kv KeyValue) error {
 	return nil
 }
 
-func KeyValuePutWithTTL(kv KeyValue, ttl int64) error {
+func KeyValuePutWithTTL(key string, value string, ttl int64) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	resp, err := Call().Grant(ctx, ttl)
@@ -38,10 +44,10 @@ func KeyValuePutWithTTL(kv KeyValue, ttl int64) error {
 		return err
 	}
 
-	key := publicKvsPrefix + kv.Key
+	key = publicKvsPrefix + key
 
 	ctx, cancel = context.WithTimeout(context.Background(), defaultTimeout)
-	_, err = Call().Put(ctx, key, kv.Value, v3.WithLease(resp.ID))
+	_, err = Call().Put(ctx, key, value, v3.WithLease(resp.ID))
 	cancel()
 	if err != nil {
 		return err
@@ -91,4 +97,9 @@ func KeyValueGetWithChild(key string) ([]KeyValue, error) {
 	}
 
 	return kvs, nil
+}
+
+func KeyValueWatch(key string) <-chan KvWatchRsq {
+
+	return nil
 }

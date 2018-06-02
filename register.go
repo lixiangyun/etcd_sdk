@@ -31,7 +31,7 @@ const (
 	EVENT_EXPIRE
 )
 
-type WatchRsqonse struct {
+type SvcWatchRsq struct {
 	Act  EVENT_TYPE
 	Name string
 	Inst Instance
@@ -281,9 +281,9 @@ func ServiceQuery(name string) ([]Instance, error) {
 	return insts, nil
 }
 
-func ServiceWatch(name string) <-chan WatchRsqonse {
+func ServiceWatch(name string) <-chan SvcWatchRsq {
 
-	wtrspch := make(chan WatchRsqonse, 100)
+	wtrspch := make(chan SvcWatchRsq, 100)
 
 	key := servicePath(name)
 
@@ -345,7 +345,7 @@ func ServiceWatch(name string) <-chan WatchRsqonse {
 					continue
 				}
 
-				wtrspch <- WatchRsqonse{Act: act, Name: name, Inst: inst}
+				wtrspch <- SvcWatchRsq{Act: act, Name: name, Inst: inst}
 			}
 		}
 

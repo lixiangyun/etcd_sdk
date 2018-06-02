@@ -90,8 +90,7 @@ func main() {
 		key := fmt.Sprintf("key_%d", i)
 		value := fmt.Sprintf("value_%d", i)
 
-		kv := etcdsdk.KeyValue{Key: key, Value: value}
-		err := etcdsdk.KeyValuePut(kv)
+		err := etcdsdk.KeyValuePut(key, value)
 		if err != nil {
 			log.Println(err.Error())
 		}
