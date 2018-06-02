@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -81,4 +82,23 @@ func main() {
 	}
 
 	cancel()
+
+	t1 := time.Now()
+
+	for i := 0; i < 1000; i++ {
+
+		key := fmt.Sprintf("key_%d", i)
+		value := fmt.Sprintf("value_%d", i)
+
+		kv := etcdsdk.KeyValue{Key: key, Value: value}
+		err := etcdsdk.KeyValuePut(kv)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
+
+	t2 := time.Now().Sub(t1)
+	t3 := float32(t2) / float32(time.Second)
+
+	log.Printf("delay time : %.3f tps \r\n", float32(1000)/t3)
 }

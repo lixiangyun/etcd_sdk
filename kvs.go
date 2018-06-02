@@ -12,16 +12,16 @@ const (
 )
 
 type KeyValue struct {
-	key   string
-	value string
+	Key   string
+	Value string
 }
 
 func KeyValuePut(kv KeyValue) error {
 
-	key := publicKvsPrefix + kv.key
+	key := publicKvsPrefix + kv.Key
 
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	_, err := Call().Put(ctx, key, kv.value)
+	_, err := Call().Put(ctx, key, kv.Value)
 	cancel()
 	if err != nil {
 		return err
@@ -38,10 +38,10 @@ func KeyValuePutWithTTL(kv KeyValue, ttl int64) error {
 		return err
 	}
 
-	key := publicKvsPrefix + kv.key
+	key := publicKvsPrefix + kv.Key
 
 	ctx, cancel = context.WithTimeout(context.Background(), defaultTimeout)
-	_, err = Call().Put(ctx, key, kv.value, v3.WithLease(resp.ID))
+	_, err = Call().Put(ctx, key, kv.Value, v3.WithLease(resp.ID))
 	cancel()
 	if err != nil {
 		return err
@@ -70,5 +70,25 @@ func KeyValueGet(key string) (string, error) {
 
 func KeyValueGetWithChild(key string) ([]KeyValue, error) {
 
-	return nil, nil
+	key = publicKvsPrefix + key
+
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	resp, err := Call().Get(ctx, key, v3.WithPrefix())
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp.Kvs) == 0 {
+		return nil, errors.New("have not found key/value!")
+	}
+
+	var kvs []KeyValue
+
+	for _, v := range resp.Kvs {
+		kv := KeyValue{Key: string(v.Key), Value: string(v.Value)}
+		kvs = append(kvs, kv)
+	}
+
+	return kvs, nil
 }
