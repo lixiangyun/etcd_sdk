@@ -13,7 +13,10 @@ import (
 )
 
 const (
-	publicPrefix = "/service/register/"
+	publicRegPrefix = "/service/register/"
+
+	defaultTTL     = 5
+	defaultTimeout = 3 * time.Second
 )
 
 type InstanceID string
@@ -66,6 +69,14 @@ var gServiceMap = &ServiceMap{
 	i: make(map[InstanceID]*InstanceCtrl),
 }
 
+func servicePath(name string) string {
+	return publicRegPrefix + name
+}
+
+func serviceInstancePath(name string, id InstanceID) string {
+	return publicRegPrefix + name + "/" + string(id)
+}
+
 func NewInstanceID() InstanceID {
 	return InstanceID(UUID())
 }
@@ -108,7 +119,7 @@ func keepalive(ctrl *InstanceCtrl) {
 func ServcieRegister(name string, endpoints []string) (InstanceID, error) {
 	svc := &Service{Name: name, Timestamp: TimestampGet()}
 
-	key := publicPrefix + name
+	key := servicePath(name)
 	value, err := json.Marshal(svc)
 	if err != nil {
 		return "", err
@@ -131,7 +142,7 @@ func ServcieRegister(name string, endpoints []string) (InstanceID, error) {
 	for {
 		inst := &Instance{ID: NewInstanceID(), Timestamp: TimestampGet(), Endpoints: endpoints, Status: 0}
 
-		key = key + "/" + string(inst.ID)
+		key = serviceInstancePath(name, inst.ID)
 		value, err := json.Marshal(inst)
 		if err != nil {
 			return "", err
@@ -180,7 +191,8 @@ func ServcieRegister(name string, endpoints []string) (InstanceID, error) {
 
 func instanceUpdate(ctrl *InstanceCtrl) (*Instance, error) {
 
-	key := publicPrefix + ctrl.svc.Name + "/" + string(ctrl.inst.ID)
+	key := serviceInstancePath(ctrl.svc.Name, ctrl.inst.ID)
+
 	value, err := json.Marshal(ctrl.inst)
 	if err != nil {
 		return nil, err
@@ -246,7 +258,7 @@ func ServiceStatusUpdate(id InstanceID, status int) error {
 
 func ServiceQuery(name string) ([]Instance, error) {
 
-	key := publicPrefix + name
+	key := servicePath(name)
 
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	resp, err := Call().Get(ctx, key, v3.WithPrefix())
@@ -273,7 +285,7 @@ func ServiceWatch(name string) <-chan WatchRsqonse {
 
 	wtrspch := make(chan WatchRsqonse, 100)
 
-	key := publicPrefix + name
+	key := servicePath(name)
 
 	ctx, _ := context.WithTimeout(context.Background(), defaultTimeout)
 	wch := Call().Watch(ctx, key, v3.WithPrefix(), v3.WithPrevKV())

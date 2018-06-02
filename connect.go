@@ -2,7 +2,6 @@ package etcdsdk
 
 import (
 	"context"
-	"time"
 
 	"github.com/coreos/etcd/clientv3"
 )
@@ -12,11 +11,6 @@ type Connect struct {
 	conn   *clientv3.Client
 	cancel context.CancelFunc
 }
-
-const (
-	defaultTTL     = 5
-	defaultTimeout = 3 * time.Second
-)
 
 var gstConnect *Connect
 
