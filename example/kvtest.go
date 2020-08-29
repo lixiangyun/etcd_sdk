@@ -12,7 +12,7 @@ func kv_test01() {
 
 	t1 := time.Now()
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10; i++ {
 
 		key := fmt.Sprintf("key_%d", i)
 		value := fmt.Sprintf("value_%d", i)
@@ -21,10 +21,18 @@ func kv_test01() {
 		if err != nil {
 			log.Println(err.Error())
 		}
+
+		list ,err := etcdsdk.KeyValueGetWithChild(key)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		log.Println(list)
 	}
 
 	t2 := time.Now().Sub(t1)
 	t3 := float32(t2) / float32(time.Second)
+
+
 
 	log.Printf("delay time : %.3f tps \r\n", float32(1000)/t3)
 }

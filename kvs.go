@@ -99,7 +99,7 @@ func KeyValueGetWithChild(key string) ([]KeyValue, error) {
 	var kvs []KeyValue
 
 	for _, v := range resp.Kvs {
-		kv := KeyValue{Key: string(v.Key), Value: string(v.Value)}
+		kv := KeyValue{Key: string(v.Key[len(publicKvsPrefix):]), Value: string(v.Value)}
 		kvs = append(kvs, kv)
 	}
 
@@ -126,7 +126,7 @@ func KeyValueWatch(ctx context.Context, key string) <-chan KvWatchRsq {
 					switch event.Type {
 					case mvcc.PUT:
 						{
-							key = string(event.Kv.Key)
+							key = string(event.Kv.Key[len(publicKvsPrefix):])
 							value = string(event.Kv.Value)
 							if event.Kv.Version == 1 {
 								act = EVENT_ADD
@@ -143,7 +143,7 @@ func KeyValueWatch(ctx context.Context, key string) <-chan KvWatchRsq {
 							}
 
 							act = EVENT_DELETE
-							key = string(event.Kv.Key)
+							key = string(event.Kv.Key[len(publicKvsPrefix):])
 							value = string(event.Kv.Value)
 							lease := event.PrevKv.Lease
 
