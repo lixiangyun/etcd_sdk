@@ -29,15 +29,31 @@ func NewAbsPath(prefix string) *AbsPath {
 	return &AbsPath{prefix: prefix}
 }
 
+func (this *AbsPath)CoderKey(key string) string {
+	key = this.prefix + key
+	if strings.HasSuffix(key, "/") == false {
+		key = key + "/"
+	}
+	return key
+}
+
+func (this *AbsPath)DecoderKey(key string) string {
+	if 0 == strings.Index(key, this.prefix) {
+		key = key[len(this.prefix):]
+	}
+	if strings.HasSuffix(key, "/") == true {
+		key = key[:len(key)-1]
+	}
+	return key
+}
+
 func (this *AbsPath)Coder(kv *KeyValue) *KeyValue {
-	kv.Key = this.prefix + kv.Key
+	kv.Key = this.CoderKey(kv.Key)
 	return kv
 }
 
 func (this *AbsPath)Decoder(kv *KeyValue) *KeyValue {
-	if 0 == strings.Index(kv.Key, this.prefix) {
-		kv.Key = kv.Key[len(this.prefix):]
-	}
+	kv.Key = this.DecoderKey(kv.Key)
 	return kv
 }
 

@@ -22,6 +22,8 @@ const (
 	EVENT_EXPIRE
 )
 
+var ERR_NOT_NEWEST = fmt.Errorf("version is not newest")
+
 type KeyValue struct {
 	Key string
 	Value []byte
@@ -45,7 +47,7 @@ type Client struct {
 
 type BaseAPI interface {
 	NewLeaseID(ttl int) (int64, error)
-	KeepLease(leaseID int64) error
+	KeepLeaseID(leaseID int64) error
 
 	PutWithLease(kv KeyValue, leaseID int64) (*KeyValue, error)
 	PutWithTTL(kv KeyValue, ttl int) (*KeyValue, error)
@@ -61,7 +63,7 @@ type BaseAPI interface {
 	Ulock(ctx context.Context, key string) error
 }
 
-func ClientInit(timeout int, endpoints []string) (*Client, error) {
+func ClientInit(timeout int, endpoints []string) (BaseAPI, error) {
 	config := clientv3.Config{
 		Endpoints: endpoints,
 		DialTimeout: 3*time.Duration(timeout)*time.Second,
@@ -128,7 +130,7 @@ func (this *Client)putCmp(kv KeyValue, leaseID clientv3.LeaseID) (*KeyValue, err
 		Key: string(prekv.Key),
 		Value: prekv.Value,
 		Version: prekv.ModRevision,
-	},fmt.Errorf("version is old")
+	}, ERR_NOT_NEWEST
 }
 
 func (this *Client)Put(kv KeyValue) (*KeyValue, error) {
@@ -300,7 +302,7 @@ func (this *Client)getLock(key string) *dlock.Mutex {
 	defer this.mutex.Unlock()
 
 	mlock = dlock.NewMutex(this.session, key)
-	gstMLock.m[key] = mlock
+	this.mlock[key] = mlock
 	return mlock
 }
 
