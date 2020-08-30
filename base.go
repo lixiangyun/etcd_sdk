@@ -89,7 +89,8 @@ func ClientInit(timeout int, endpoints []string) (BaseAPI, error) {
 
 func (this *Client)put(kv KeyValue, leaseID clientv3.LeaseID) (*KeyValue, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), this.timeout)
-	var opt []clientv3.OpOption
+
+	opt := []clientv3.OpOption{clientv3.WithPrevKV()}
 	if leaseID != -1 {
 		opt = append(opt, clientv3.WithLease(leaseID))
 	}

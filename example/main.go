@@ -46,7 +46,15 @@ func main() {
 		if err != nil {
 			log.Println(err.Error())
 		}
+		err = tableAPI.Update(key, []byte("value:1234"))
+		if err != nil {
+			log.Println(err.Error())
+		}
 	}
+
+	list, _ := tableAPI.Query()
+
+	log.Println(list)
 
 	lock_test1()
 }

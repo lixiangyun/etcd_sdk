@@ -34,6 +34,8 @@ type DBClient struct {
 	name  string
 }
 
+var ERR_PARAM_INVALID = fmt.Errorf("input param is invalid")
+
 func NewDBInit(api BaseAPI, name string) (DBAPI, error) {
 	kv := KeyValue{
 		Key: fmt.Sprintf("/%s", name),
@@ -74,6 +76,9 @@ func (db *DBClient)DelTable(name string) error  {
 }
 
 func (tab *table)Insert(key string, value []byte) error {
+	if len(key) == 0 {
+		return ERR_PARAM_INVALID
+	}
 	kv := KeyValue{Key: key, Value: value, Version: 0}
 	tab.path.Coder(&kv)
 	_, err := tab.api.Put(kv)
@@ -81,10 +86,16 @@ func (tab *table)Insert(key string, value []byte) error {
 }
 
 func (tab *table)Delete(key string) error {
+	if len(key) == 0 {
+		return ERR_PARAM_INVALID
+	}
 	return tab.api.Del(tab.path.CoderKey(key))
 }
 
 func (tab *table)Update(key string, value []byte) error {
+	if len(key) == 0 {
+		return ERR_PARAM_INVALID
+	}
 	kv := KeyValue{Key: key, Value: value, Version: -1}
 	tab.path.Coder(&kv)
 	_, err := tab.api.Put(kv)
@@ -97,10 +108,19 @@ func (tab *table)Query() ([]KeyValue, error) {
 		return nil, err
 	}
 	tab.path.ListDecoder(kvs)
-	return kvs, nil
+	var output []KeyValue
+	for _, v := range kvs {
+		if len(v.Key) != 0 {
+			output = append(output, v)
+		}
+	}
+	return output, nil
 }
 
 func (tab *table)QueryKey(key string) (*KeyValue, error) {
+	if len(key) == 0 {
+		return nil, ERR_PARAM_INVALID
+	}
 	kv, err := tab.api.Get(tab.path.CoderKey(key))
 	if err != nil {
 		return nil, err
